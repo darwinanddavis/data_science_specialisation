@@ -16,7 +16,8 @@ opac <- 0.7
 # labels
 ttl <- paste0("Airbnb data for Amsterdam, The Netherlands, since April 16, 2020",
               "<br/>","Data scraped from <a href=http://insideairbnb.com/get-the-data.html> Inside Airbnb open data</a>", 
-              "<br/> Date:", Sys.Date(),
+              "<br/> Date: ", Sys.Date(),"<br/>",
+              "<br/> Matt Malishev",
               "<br/> Github: <a href=https://github.com/darwinanddavis> @darwinanddavis </a>"
 ) 
 
