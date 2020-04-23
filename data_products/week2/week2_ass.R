@@ -2,7 +2,7 @@ pacman::p_load(here,leaflet,dplyr,readr,colorspace,purrr,htmltools,htmlwidgets,h
 set_here("/Users/malishev/Documents/Coursera/data_science_specialisation/assignments")
 wd <- here("data_products","week2")
 
-# url <- "http://data.insideairbnb.com/the-netherlands/north-holland/amsterdam/2020-04-16/data/listings.csv.gz"
+url <- "http://data.insideairbnb.com/the-netherlands/north-holland/amsterdam/2020-04-16/data/listings.csv.gz"
 airbnb <- url %>% 
   read_csv
 lon <- airbnb$longitude %>% as.numeric()
@@ -14,7 +14,11 @@ colv_vec <- colv(length(rating))[as.numeric(cut(rating, breaks = length(rating))
 opac <- 0.7
 
 # labels
-ttl <- "Airbnb data for Amsterdam, Holland, since April 16, 2020"
+ttl <- paste0("Airbnb data for Amsterdam, The Netherlands, since April 16, 2020",
+              "<br/>","Data scraped from <a href=http://insideairbnb.com/get-the-data.html> Inside Airbnb open data</a>", 
+              "<br/> Date:", Sys.Date(),
+              "<br/> Github: <a href=https://github.com/darwinanddavis> @darwinanddavis </a>"
+) 
 
 
 # title
@@ -22,13 +26,13 @@ tag.map.title <- tags$style(
   HTML(".leaflet-control.map-title { 
        transform: translate(-50%,20%);
        position: fixed !important;
-       left: 50%;
+       left: 40%;
        text-align: center;
        padding-left: 10px; 
        padding-right: 10px; 
        background: white; opacity: 0.7;
        font-weight: bold;
-       font-size: 20px;
+       font-size: 15px;
        }"
        ))
 
@@ -41,11 +45,6 @@ text_label_opt <- labelOptions(noHide = T, direction = "top",
                                textOnly = T, offset = c(0,0),
                                style = style
 )
-
-href <- paste("Data scraped from <a href=http://insideairbnb.com/get-the-data.html> Inside Airbnb open data</a>", 
-              "<br/> Date:", Sys.Date(),
-              "<br/> Github: <a href=https://darwinanddavis.github.io/data_science_specialisation/data_products/week2/week2.html> @darwinanddavis </a>") 
-
 
 cleanliness <- airbnb[,"review_scores_cleanliness"] %>% unique
 cleanliness[is.na(cleanliness)] <- 1
@@ -72,7 +71,7 @@ text_label_opt <- labelOptions(noHide = F, direction = "top", textsize = "10px",
                                style = style, permanent = T
 )
 
-map <- leaflet() %>% 
+map <- leaflet(width = 1200, height = 900) %>% 
   setView(lon[1],lat[1],zoom=12) %>% 
   addTiles() %>% 
   addCircles(lon,lat,
@@ -86,6 +85,7 @@ map <- leaflet() %>%
              popup=site_names,
              labelOptions = text_label_opt) %>%
   addProviderTiles("CartoDB.DarkMatter") %>% 
-  addControl(title, position = "topleft", className="map-title") %>% 
-  addControl(href,"topright")
+  addControl(title, "topleft", className="map-title")
 map
+
+save_html(map,paste0(wd,"/week2.html"),background = "#090909")
