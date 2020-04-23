@@ -189,7 +189,7 @@ htmltools::save_html(pp,paste0(wd,"/",fh))
 ```
 
 
-# {data-background-iframe="https://darwinanddavis.github.io/data_science_specialisation/data_products/week3/plot.html"}
+# {data-background-iframe="https://darwinanddavis.github.io/data_science_specialisation/data_products/week3/plot.html" data-background-size="99.99% 99.99%" data-background-repeat="no-repeat"}
 
 <!-- ________________________________________________________ slide break -->
 
