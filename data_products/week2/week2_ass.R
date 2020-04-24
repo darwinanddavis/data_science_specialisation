@@ -9,11 +9,20 @@ lon <- airbnb$longitude %>% as.numeric()
 lat <- airbnb$latitude %>% as.numeric()
 rating <- airbnb$review_scores_rating %>% as.numeric()
 
+# col
 colv <- colorRampPalette(diverge_hcl(rating %>% length, "Berlin") %>% sort)
 colv_vec <- colv(length(rating))[as.numeric(cut(rating, breaks = length(rating)))]  # define breaks in col gradient
 opac <- 0.7
+font_size <- 40
 
 # labels
+style <- list(
+  "color" = "black",
+  "font-weight" = "normal",
+  "font-family" = "Optima",
+  "padding" = "3px 3px"
+)
+
 ttl <- paste0("Airbnb data for Amsterdam, The Netherlands, since April 16, 2020",
               "<br/>","Data scraped from <a href=http://insideairbnb.com/get-the-data.html> Inside Airbnb open data</a>", 
               "<br/> Date: ", Sys.Date(),"<br/>",
@@ -47,25 +56,29 @@ text_label_opt <- labelOptions(noHide = T, direction = "top",
                                style = style
 )
 
+# popup data 
 cleanliness <- airbnb[,"review_scores_cleanliness"] %>% unique
 cleanliness[is.na(cleanliness)] <- 1
 beds <- airbnb[,"beds"] %>% unique
 beds[is.na(beds)] <- 1
 beds <- beds + 1
-site_names <- paste("<strong> Ratings </strong>","<br/>",
-                    "<strong> Check-in: </strong>", airbnb$review_scores_checkin,"<br/>", 
-                    "<strong> Cleanliness: </strong>", airbnb$review_scores_cleanliness,"<br/>",
-                    "<strong> Location: </strong>", airbnb$review_scores_location
-) 
-rating_overall <- paste("Overall rating: ",airbnb$review_scores_rating)
+weblink <- airbnb$host_url # weblink
+webname <- airbnb$host_name
+href <- paste0("<strong><a href=",weblink,">",webname,"</a></strong>") # host url
+host_img <-  paste0("<img src=",airbnb$host_picture_url,"height=\"150px\" width=\"150px\">") # host img
 
-# text label options 
-style <- list(
-  "color" = "black",
-  "font-weight" = "normal",
-  "font-family" = "Optima",
-  "padding" = "3px 3px"
-)
+site_names <- paste(sep="<br/>",
+                    "<div style=\"font-size:20px;\">",href, "</div>",
+                    host_img,
+                    "Neighbourhood: ",airbnb$neighbourhood_cleansed,
+                    "No. of reviews: ", airbnb$number_of_reviews,"<br/>",
+                    "<strong> Ratings </strong>",
+                    "Location: ", airbnb$review_scores_location,
+                    "Check-in: ", airbnb$review_scores_checkin,
+                    "Cleanliness: ", airbnb$review_scores_cleanliness
+) 
+
+rating_overall <- paste("Overall rating: ",airbnb$review_scores_rating)
 
 text_label_opt <- labelOptions(noHide = F, direction = "top", textsize = "10px",
                                textOnly = F, opacity = 1, offset = c(0,0),
