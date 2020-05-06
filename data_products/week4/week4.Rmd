@@ -32,6 +32,8 @@ output:
       maxScale: 1.0
 ---  
 
+<!-- https://darwinanddavis.github.io/data_science_specialisation/data_products/week4/week4.html#/ -->
+
 ```{r, set-options, echo = FALSE, cache = FALSE}
 knitr::opts_chunk$set(
  eval = T, # run all code
@@ -81,6 +83,11 @@ require(leaflet)
 .reveal section h3 {
   color:#FF385C;
 }
+
+.reveal .small {
+  font-size: 35%;
+  text-align: center;
+}
 ```
 
 
@@ -125,9 +132,11 @@ df %>% select(`Host name`,`Host url`,Longitude, Latitude,Bedrooms,Neighbourhood,
   
 ---    
 
-### Selecting the data    
+### The Shiny app  
 
-The user selects the base criteria of **Price** and **Number of bedrooms** in addition to the **Criteria** they want to visualise, such as _Cancellation policy_. The data are then analysed and subsetted by these filters. The user then selects the **Colour palette** for visualising the data.          
+https://darwinanddavis.shinyapps.io/airbnb/         
+
+The user selects the base criteria of **Price** and **Number of bedrooms** in addition to the **Criteria** they want to visualise, such as _Cancellation policy_. The data are then analysed and subsetted by these filters. The user then selects the **Colour palette** for visualising the data.            
 
 ![](img/user_inputs.jpg)
 
@@ -171,6 +180,12 @@ colv_vec[is.na(colv_vec)] <- "black" # change NA to black
 
 Check out the [Shiny app here](https://darwinanddavis.shinyapps.io/airbnb/).  
 Code for `ui.R` and `server.R` found on [Github](https://github.com/darwinanddavis/data_science_specialisation/tree/gh-pages/data_products/week4/airbnb).   
+
+<p class="small"> 
+If links don't load.    
+Shiny app: https://darwinanddavis.shinyapps.io/airbnb/  
+Shiny app files: https://github.com/darwinanddavis/data_science_specialisation/tree/gh-pages/data_products/week4/airbnb 
+</p>
 
 ```{r, echo=T}
 leaflet() %>% addTiles() %>% addProviderTiles("CartoDB") %>%
