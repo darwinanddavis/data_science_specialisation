@@ -170,7 +170,7 @@ colv_vec[is.na(colv_vec)] <- "black" # change NA to black
 ### Thanks for playing    
 
 Check out the [Shiny app here](https://darwinanddavis.shinyapps.io/airbnb/).  
-Code for `ui.R` and `server.R` found on [Github](https://github.com/darwinanddavis/data_science_specialisation/tree/gh-pages/data_products/week4/airbnb/).   
+Code for `ui.R` and `server.R` found on [Github](https://github.com/darwinanddavis/data_science_specialisation/tree/gh-pages/data_products/week4/airbnb).   
 
 ```{r, echo=T}
 leaflet() %>% addTiles() %>% addProviderTiles("CartoDB") %>%
