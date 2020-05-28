@@ -121,10 +121,31 @@ training_data <-  "https://github.com/darwinanddavis/data_science_specialisation
 testing_data <-  "https://github.com/darwinanddavis/data_science_specialisation/raw/gh-pages/ml/ass/pml-testing.csv" %>% read_csv
 ```
 
-### Split the training and testing data  
+After reading in the data, remove all the variables with zero variance     
+```{r}
+nzvar <- nearZeroVar(training_data)
+training_data <- training_data[,-nzvar]
+testing_data <- testing_data[,-nzvar]
+dim(training_data)
+dim(testing_data)
+```
+
+
+### Split the training and testing data 
+
+Set the seed and remove NAs from the data that will confound the predictions. Set the threshold to 90% to make it interesting.  
 ```{r}
 set.seed(12)
-training_data <- Filter(function(x)!all(is.na(x)), training_data) # remove nas
+# remove nas
+rmna <- sapply(training_data, function(x) mean(is.na(x))) > 0.9
+training_data <- training_data[,rmna == F]
+testing_data <- testing_data[,rmna == F]
+# training_data <- Filter(function(x)!all(is.na(x)), training_data) # remove nas
+# testing_data <- Filter(function(x)!all(is.na(x)), testing_data) # remove nas
+```
+
+We also need to remove the unneeded variables that won't be part of the predictions, then we can split the data into training and testing sets.  
+```{r}
 training_data <- training_data[,-c(1:7)] # remove unneeded variables 
 testing_data <- testing_data[,-c(1:7)] 
 
@@ -152,9 +173,7 @@ First, the training model was built from the training dataset for each of the ex
 The idea then is to classify the data by building a classification tree. We use the training data to train the model for the classification, then test it against the testing data for the variables of interest.    
 
 ```{r}
-mod1 <- train(classe ~ total_accel_dumbbell + 
-                  total_accel_arm +
-                  total_accel_forearm,
+mod1 <- train(classe ~ .,
                 method="rpart",
                 data=training)
 mod1fin <- mod1$finalModel
@@ -172,18 +191,12 @@ require(rattle)
 fancyRpartPlot(mod1fin)
 ```
 
-
-With few variables, not much of the variation can be captured across the different exercise movements.    
-
 Then we predict the new values for the testing data using the trained classification model and get the accuracy.  
 ```{r}
 # predict against testing data 
-pred1 <- predict(mod1,newdata=
-                  testing %>% dplyr::select(total_accel_dumbbell,total_accel_arm,total_accel_forearm
-)) 
+pred1 <- predict(mod1, testing)
 # get accuracy 
 sum(pred1 == testing$classe) / length(pred1) 
-
 ```
 
 ## Model 2: Bagging       
@@ -192,38 +205,57 @@ We can test another model to see if it performs better, such as a boottrapping w
 
 The model works by averaging complicated models together to get a smoother model fit that gives a balance between potential bias and variance in model fit.  
 
-The training data metrics were then tested against the testing data to determine how well the a boosting model performed in predicting the outcomes.  
+The training data metrics were then tested against the testing data to determine how well a boosting model performed in predicting the outcomes.  
 
 ```{r}
-mod2 <- train(classe ~ total_accel_dumbbell + 
-                       total_accel_arm +
-                       total_accel_forearm,
-                     method="treebag",
+mod2 <- train(classe ~ .,
+              method="treebag",
               coob=T,
               keepX=T,
               data=training)
 mod2fin <- mod2$finalModel
 # prediction for bagging method 
-pred2 <- predict(mod2,newdata =
-                  testing %>% dplyr::select(total_accel_dumbbell,total_accel_arm,total_accel_forearm
-)) 
+pred2 <- predict(mod2,testing)
 sum(pred2 == testing$classe) / length(pred2) 
 ```
 
+Finally, we test another boosting method for the predictors (GBM model).    
+```{r}
+mod3 <- train(classe ~ ., 
+              method = "gbm", 
+              verbose = F,
+              data = training)
+mod3fin <- mod3$finalmodel
+pred3 <- predict(mod3,testing)
+confusionMatrix(pred3, testing$classe)
+sum(pred3 == testing$classe) / length(pred3) 
+```
 
-The bagging model performs better than the classification tree due to it's higher accuracy, so we choose this model as the final model for the testing dataset.   
+The bagging model performs much better than the classification tree due to it's higher accuracy, so we choose this model as the final model for the testing dataset.   
 
 ```{r}
 data.frame(
-  "model" = c("Classification tree","Bagging"),
+  "model" = c("Classification tree","Bagging","GBM"),
   "accuracy" = c(
     sum(pred1 == testing$classe) / length(pred1),
-    sum(pred2 == testing$classe) / length(pred2) 
+    sum(pred2 == testing$classe) / length(pred2),
+    sum(pred3 == testing$classe) / length(pred3) 
   )
 )
 ```
 
-[1] 0.5248726
+<!-- Finally, we pull the overall statistics from the model fit to verify it's the better option.   -->
+
+<!-- ```{r} -->
+<!-- tb_code <- getModelInfo("treebag")[[1]] -->
+<!-- tb_code$oob(mod2fin) # get out of bag error and stats   -->
+<!-- ``` -->
+
+With our selected model, we can test how well it performs on the testing data set.    
+```{r}
+pred_final <- predict(mod2,testing_data)
+pred_final %>% summary
+```
 
 
 Due to the long processing time of the model construction, only predicting on a few variables generated low accuracies for both methods. This served as a useful lesson in building predictions as lacking the appropriate data can severely misinform predictions and would likely perform worse than unsupervised methods.  
