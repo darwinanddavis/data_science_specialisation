@@ -1,3 +1,5 @@
+# airbnb shiny app week 4
+# install.packages('rsconnect')
 require(shiny)
 require(shinythemes)
 require(dplyr)
@@ -33,19 +35,33 @@ city_names <- list(
   "Vancouver, Canada"
 )
 city_urls <- list(
-  "http://data.insideairbnb.com/australia/vic/melbourne/2020-03-16/data/listings.csv.gz",
+  "http://data.insideairbnb.com/the-netherlands/north-holland/amsterdam/2020-05-08/data/listings.csv.gz",
+  "http://data.insideairbnb.com/germany/be/berlin/2020-05-14/data/listings.csv.gz",
+  "http://data.insideairbnb.com/united-states/il/chicago/2020-04-23/data/listings.csv.gz",
+  "http://data.insideairbnb.com/united-kingdom/scotland/edinburgh/2020-04-27/data/listings.csv.gz",
+  "http://data.insideairbnb.com/china/hk/hong-kong/2020-04-29/data/listings.csv.gz",
+  "http://data.insideairbnb.com/portugal/lisbon/lisbon/2020-04-29/data/listings.csv.gz",
   "http://data.insideairbnb.com/united-kingdom/england/london/2020-04-14/data/listings.csv.gz",
-  "http://data.insideairbnb.com/united-states/il/chicago/2020-03-18/data/listings.csv.gz",
-  "http://data.insideairbnb.com/china/hk/hong-kong/2020-03-17/data/listings.csv.gz",
-  "http://data.insideairbnb.com/the-netherlands/north-holland/amsterdam/2020-04-16/data/listings.csv.gz",
-  "http://data.insideairbnb.com/germany/be/berlin/2020-03-17/data/listings.csv.gz",
-  "http://data.insideairbnb.com/brazil/rj/rio-de-janeiro/2020-03-18/data/listings.csv.gz",
-  "http://data.insideairbnb.com/france/ile-de-france/paris/2020-03-15/data/listings.csv.gz",
-  "http://data.insideairbnb.com/canada/bc/vancouver/2020-04-17/data/listings.csv.gz",
-  "http://data.insideairbnb.com/united-kingdom/scotland/edinburgh/2020-03-21/data/listings.csv.gz",
-  "http://data.insideairbnb.com/norway/oslo/oslo/2020-03-22/data/listings.csv.gz",
-  "http://data.insideairbnb.com/portugal/lisbon/lisbon/2020-03-21/data/listings.csv.gz",
-  "http://data.insideairbnb.com/sweden/stockholms-l%C3%A4n/stockholm/2020-03-22/data/listings.csv.gz"
+  "http://data.insideairbnb.com/australia/vic/melbourne/2020-05-13/data/listings.csv.gz",
+  "http://data.insideairbnb.com/norway/oslo/oslo/2020-04-30/data/listings.csv.gz",
+  "http://data.insideairbnb.com/france/ile-de-france/paris/2020-04-15/data/listings.csv.gz",
+  "http://data.insideairbnb.com/brazil/rj/rio-de-janeiro/2020-04-20/data/listings.csv.gz",
+  "http://data.insideairbnb.com/sweden/stockholms-l%C3%A4n/stockholm/2020-04-28/data/listings.csv.gz",
+  "http://data.insideairbnb.com/canada/bc/vancouver/2020-05-11/data/listings.csv.gz"
+  # 
+  # "http://data.insideairbnb.com/australia/vic/melbourne/2020-03-16/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/united-kingdom/england/london/2020-04-14/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/united-states/il/chicago/2020-03-18/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/china/hk/hong-kong/2020-03-17/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/the-netherlands/north-holland/amsterdam/2020-04-16/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/germany/be/berlin/2020-03-17/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/brazil/rj/rio-de-janeiro/2020-03-18/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/france/ile-de-france/paris/2020-03-15/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/canada/bc/vancouver/2020-04-17/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/united-kingdom/scotland/edinburgh/2020-03-21/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/norway/oslo/oslo/2020-03-22/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/portugal/lisbon/lisbon/2020-03-21/data/listings.csv.gz",
+  # "http://data.insideairbnb.com/sweden/stockholms-l%C3%A4n/stockholm/2020-03-22/data/listings.csv.gz"
 )
 # criteria to subset from df 
 criteria_candidates <- c(
@@ -99,7 +115,7 @@ shinyServer(function(input, output){
     airbnb <- airbnb %>% # round off data 
       mutate_at("Security deposit",funs(plyr::round_any(.,100))) %>% 
       mutate_at("Cleaning fee",funs(plyr::round_any(.,100))) %>% 
-      mutate_at("Accommodates",funs(plyr::round_any(.,5))) %>% 
+      mutate_at("Accommodates",funs(plyr::round_any(.,1))) %>% 
       mutate_at("Reviews per month",funs(plyr::round_any(.,5))) %>% 
       mutate_at("Review scores rating",funs(plyr::round_any(.,10))) %>% 
       mutate_at("Bathrooms",funs(plyr::round_any(.,1))) 
