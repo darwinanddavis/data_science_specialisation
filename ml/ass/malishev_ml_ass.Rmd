@@ -104,13 +104,15 @@ Data readings were taken from 10 reps for five different movements, one correct 
 * D: lowering the weight halfway (Class D)  
 * E: throwing the hips to the front (Class E)  
   
-A random forest machine learning algorithm was applied to test how well the training data could predict the four incorrect exercise movements in the test data. The model tested _Total acceleration of the forearm_, _Total acceleration of the arm_, and _Total acceleration of the dumbbell_ variables for one user.      
+A series of learning models were applied to test how well the training data could predict the four incorrect exercise movements in the test data.        
 
 ```{r, load packages, include=T, cache=F, message=F, warning=F, results='hide'}
-library(caret)
+require(caret)
 require(dplyr)
 require(readr)
 require(here)
+require(randomForest)
+require(rattle)
 ```
 
 Read in the data  
@@ -120,6 +122,12 @@ complete_data <- "https://github.com/darwinanddavis/data_science_specialisation/
 training_data <-  "https://github.com/darwinanddavis/data_science_specialisation/raw/gh-pages/ml/ass/pml-training.csv" %>% read_csv
 testing_data <-  "https://github.com/darwinanddavis/data_science_specialisation/raw/gh-pages/ml/ass/pml-testing.csv" %>% read_csv
 ```
+
+Visualise the data  
+```{r}
+training_data %>% names
+```
+
 
 After reading in the data, remove all the variables with zero variance     
 ```{r}
@@ -140,8 +148,7 @@ set.seed(12)
 rmna <- sapply(training_data, function(x) mean(is.na(x))) > 0.9
 training_data <- training_data[,rmna == F]
 testing_data <- testing_data[,rmna == F]
-# training_data <- Filter(function(x)!all(is.na(x)), training_data) # remove nas
-# testing_data <- Filter(function(x)!all(is.na(x)), testing_data) # remove nas
+
 ```
 
 We also need to remove the unneeded variables that won't be part of the predictions, then we can split the data into training and testing sets.  
@@ -161,10 +168,6 @@ training$classe <- factor(as.character(training$classe))
 testing$classe <- factor(as.character(testing$classe))
 ```
 
-
-## Training model    
-
-Note, the following models used were very computationally intensive to run for reasons unknown, even after removing variables, so I have chosen a smaller number of variables to train and test the different predictions. This is by no means the appropriate way to train models using classification methods, but the methods here can be applied to larger datasets given the appropriate computing power. The modelling exercise is identical, but reports a lower accuracy.      
 
 ## Model 1: Classification tree  
 
@@ -219,30 +222,21 @@ pred2 <- predict(mod2,testing)
 sum(pred2 == testing$classe) / length(pred2) 
 ```
 
+## Model 3: Boosting (GBM)    
+
 Finally, we test another boosting method for the predictors (GBM model).    
 ```{r}
-mod3 <- train(classe ~ ., 
+require(randomForest)
+mod3 <- train(classe ~ .,
               method = "gbm", 
               verbose = F,
               data = training)
-mod3fin <- mod3$finalmodel
+mod3fin <- mod3$finalModel
 pred3 <- predict(mod3,testing)
 confusionMatrix(pred3, testing$classe)
 sum(pred3 == testing$classe) / length(pred3) 
 ```
 
-The bagging model performs much better than the classification tree due to it's higher accuracy, so we choose this model as the final model for the testing dataset.   
-
-```{r}
-data.frame(
-  "model" = c("Classification tree","Bagging","GBM"),
-  "accuracy" = c(
-    sum(pred1 == testing$classe) / length(pred1),
-    sum(pred2 == testing$classe) / length(pred2),
-    sum(pred3 == testing$classe) / length(pred3) 
-  )
-)
-```
 
 <!-- Finally, we pull the overall statistics from the model fit to verify it's the better option.   -->
 
@@ -250,14 +244,48 @@ data.frame(
 <!-- tb_code <- getModelInfo("treebag")[[1]] -->
 <!-- tb_code$oob(mod2fin) # get out of bag error and stats   -->
 <!-- ``` -->
-
-With our selected model, we can test how well it performs on the testing data set.    
+  
+## Combined model  
+  
+By combining the model predictions, we can cross validate how well they perform on the testing data using a GAM method.        
 ```{r}
-pred_final <- predict(mod2,testing_data)
-pred_final %>% summary
+pred_df <- data.frame("Classification tree" = pred1,
+                    "Bagging" = pred2,
+                    "GBM" = pred3,
+                    classe=testing$classe)
+modcom <- train(classe ~.,
+                method="gam", # apply a gam method for predicting all models  
+                data=pred_df)
+modcomfin <- modcom$finalModel # get final final 
+modcom_pred <- predict(modcom,pred_df) # test against testing data  
+
+# run diagnostics  
+table(modcom_pred,testing$classe) 
+confusionMatrix(table(modcom_pred,testing$classe))
 ```
 
+## Conclusion  
 
-Due to the long processing time of the model construction, only predicting on a few variables generated low accuracies for both methods. This served as a useful lesson in building predictions as lacking the appropriate data can severely misinform predictions and would likely perform worse than unsupervised methods.  
+The bagging model outperforms both other methods due to it's higher accuracy, so we choose this model as the final model for the testing dataset.    
+
+```{r}
+data.frame(
+  "model" = c("Classification tree","Bagging","GBM","GAM"),
+  "accuracy" = c(
+    sum(pred1 == testing$classe) / length(pred1),
+    sum(pred2 == testing$classe) / length(pred2),
+    sum(pred3 == testing$classe) / length(pred3),
+    sum(modcom_pred == testing$classe) / length(modcom_pred) 
+  )
+)
+```
+
+With our selected model, we can test how well it performs on the testing data set.
+
+```{r}
+pred_final <- predict(mod2,testing_data)
+pred_final[1:20] 
+```
+
 
 
